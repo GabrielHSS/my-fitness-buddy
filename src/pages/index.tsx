@@ -1,5 +1,11 @@
 import Head from 'next/head'
 
+import styled from 'styled-components'
+
+export const Title = styled.div`
+  font: ${props => props.theme.text.title.h1.regular_poppins};
+`
+
 const Home: React.FC = () => {
   return (
     <div>
@@ -9,7 +15,7 @@ const Home: React.FC = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <h1>hi there</h1>
+        <Title>hi there</Title>
       </main>
     </div>
   )
