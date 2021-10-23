@@ -6,8 +6,7 @@ export default createGlobalStyle`
     padding: 0;
     box-sizing: border-box;
   }
-  body{
-   background: #121214;
-   color: #e1e1e6;
+  html{
+    overflow-x: hidden;
   }
 `
