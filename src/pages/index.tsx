@@ -1,18 +1,7 @@
 import Head from 'next/head'
 import styled from 'styled-components'
-import { MenuOutlined, ExperimentFilled } from '@ant-design/icons'
-import {
-  Button,
-  Card,
-  Descriptions,
-  Dropdown,
-  Menu,
-  Space,
-  Table,
-  Tag,
-  List
-} from 'antd'
-import Background from '../assets/bg.png'
+import { ExperimentFilled } from '@ant-design/icons'
+import { Card, Table, List } from 'antd'
 import api from '../services/api'
 import { useEffect, useState } from 'react'
 import Search from 'antd/lib/input/Search'
@@ -21,12 +10,11 @@ const Wrapper = styled.main`
   min-height: 100vh;
   min-width: 100vw;
 `
-
 const Header = styled.section`
   display: flex;
   align-items: center;
   padding: 12px 70px;
-  background-color: ${props => props.theme.colors.primary40};
+  background-color: ${({ theme }) => theme.colors.primary50};
   .logo-container {
     display: flex;
     align-items: center;
@@ -66,7 +54,7 @@ const Heading = styled.div`
   color: #fff;
   padding: 108px 0;
   .title {
-    font: 700 64px/100% Poppins;
+    font: 700 48px/100% Poppins;
     margin-bottom: 24px;
   }
   .subtitle {
@@ -77,109 +65,135 @@ const SearchContainer = styled(Card)`
   width: 50%;
   margin: 0 auto;
   margin-bottom: 54px;
-
-  & .ant-input-search .ant-input-affix-wrapper:focus,
-  & .ant-input-search .ant-input-affix-wrapper:active,
-  & .ant-input-search .ant-input-affix-wrapper:hover,
-  & .ant-input-affix-wrapper:focus,
-  & .ant-input-affix-wrapper-focused {
-    border-color: #d9d9d9;
+  box-shadow: 0px 25px 33px 0px hsla(248, 57%, 60%, 0.05);
+  border: 2px solid hsla(248, 57%, 60%, 0.125) !important;
+  border-color: transparent;
+  & .ant-input-search .ant-input,
+  & .ant-input-search .ant-input:focus,
+  & .ant-input-search .ant-input:active,
+  & .ant-input-search .ant-input:hover,
+  & .ant-input:focus,
+  & .ant-input-focused {
+    border-color: hsla(248, 57%, 60%, 0.125);
     outline: 0;
     -webkit-box-shadow: none;
     box-shadow: none;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
   }
-  & .ant-input-search .ant-input-affix-wrapper input {
+  & .ant-input-search .ant-input {
   }
-  & .ant-input-search .ant-input-affix-wrapper input::placeholder {
-    color: #e6e6e6;
+  & .ant-input-search .ant-input::placeholder {
+    color: hsla(0, 0%, 0%, 0.2);
+  }
+  & .ant-btn {
+    background-color: ${({ theme }) => theme.colors.primary50};
+    border: none;
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
+  }
+  & .anticon {
+    color: #fff;
   }
 `
-
-const columns = [
-  {
-    title: 'ID',
-    dataIndex: 'key',
-    key: 'key'
-  },
-  {
-    title: 'Nome',
-    dataIndex: 'description',
-    key: 'description'
-  },
-  {
-    title: 'Categoria',
-    dataIndex: 'foodCategory',
-    key: 'foodCategory'
-  }
-]
-
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park'
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park'
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park'
-  }
-]
-const tableData = (data: any) => {
-  const rows: Array<any> = []
-  data?.forEach((item: any) => {
-    // Remove branded foods info
-    item.dataType === 'Survey (FNDDS)' &&
-      rows.push({
-        key: item.fdcId,
-        description: item.description,
-        foodCategory: item.foodCategory,
-        foodNutrients: item.foodNutrients
-      })
-  })
-
-  return rows
+type FoodNutrients = {
+  nutrientName: string
+  value: number
+  unitName: string
 }
+type Record = {
+  foodNutrients: FoodNutrients[]
+  description: string[]
+}
+
+type Data = {
+  dataType?: string
+  key: string[]
+  description: string[]
+  foodCategory: string[]
+  foodNutrients: FoodNutrients[]
+}
+
 const Home: React.FC = () => {
-  const [apiData, setApiData] = useState<any>({})
-  const [selectedFood, setSelectedFood] = useState<any>()
-  const [loading, setLoading] = useState<any>()
+  const [apiData, setApiData] = useState<any>()
+  const [selectedFood, setSelectedFood] = useState<string>()
+  const [loading, setLoading] = useState<boolean>()
 
   const handleData = async () => {
     setLoading(true)
     selectedFood !== '' &&
-      (await api
-        .get(`/foods/search?query=${selectedFood}`)
-        .then(({ data }) => setApiData(data)))
+      (await api.get(`/foods/search?query=${selectedFood}`).then(res => {
+        const data = res.data
+        setApiData(data)
+      }))
     setLoading(false)
   }
-  const expandableRow = (record: any) => (
-    <List
-      bordered
-      dataSource={record.foodNutrients}
-      style={{ maxHeight: '500px', overflowY: 'scroll' }}
-      renderItem={(item: any) => (
-        <List.Item>
-          <p style={{ width: '50%' }}>{item.nutrientName}</p>
-          <p style={{ width: '50%' }}>{item.nutrientNumber / 100 + 'g'}</p>
-        </List.Item>
-      )}
-    />
-  )
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'key',
+      key: 'key'
+    },
+    {
+      title: 'Nome',
+      dataIndex: 'description',
+      key: 'description'
+    },
+    {
+      title: 'Categoria',
+      dataIndex: 'foodCategory',
+      key: 'foodCategory'
+    }
+  ]
+
+  const tableData = (data: Data[]) => {
+    const rows: Array<Data> = []
+    data?.forEach((item: Data) => {
+      // Remove branded foods info
+      item.dataType === 'Survey (FNDDS)' &&
+        rows.push({
+          key: item.key,
+          description: item.description,
+          foodCategory: item.foodCategory,
+          foodNutrients: item.foodNutrients
+        })
+    })
+    return rows
+  }
+
+  const expandableRow = (record: Record) => {
+    return (
+      <List
+        bordered
+        dataSource={record.foodNutrients || undefined}
+        style={{ maxHeight: '500px', overflowY: 'scroll' }}
+        renderItem={(item: FoodNutrients) => {
+          return (
+            <List.Item key={item.nutrientName}>
+              <p style={{ width: '50%' }}>{item.nutrientName}</p>
+              <p style={{ width: '50%' }}>
+                {item.value + item.unitName.toLowerCase()}
+              </p>
+            </List.Item>
+          )
+        }}
+      />
+    )
+  }
+  useEffect(() => {
+    selectedFood === '' && setApiData(undefined)
+    console.log(apiData)
+  }, [selectedFood])
   return (
     <div>
       <Head>
-        <title>Home</title>
-        <meta name="description" content="Generated by create next app" />
+        <title>MyFitnessBuddy</title>
         <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Seu parceiro fitness!" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="Portuguese" />
+        <meta name="author" content="MyFitnessBuddy" />
       </Head>
       <Wrapper>
         <Header>
@@ -198,22 +212,27 @@ const Home: React.FC = () => {
           <SearchContainer>
             <Search
               placeholder="Pesquise aqui o alimento"
-              allowClear
               size="large"
-              onChange={event => setSelectedFood(event.target.value)}
+              onChange={event => {
+                console.log(event.target.value, apiData)
+                setSelectedFood(event.target.value)
+              }}
               onSearch={handleData}
+              loading={loading}
             />
           </SearchContainer>
-          <Card className={'body-card'}>
-            <Table
-              columns={columns}
-              dataSource={tableData(apiData.foods)}
-              loading={loading}
-              expandable={{
-                expandedRowRender: record => expandableRow(record)
-              }}
-            />
-          </Card>
+          {apiData !== undefined && selectedFood !== '' && (
+            <Card className={'body-card'}>
+              <Table
+                columns={columns}
+                dataSource={tableData(apiData?.foods)}
+                loading={loading}
+                expandable={{
+                  expandedRowRender: record => expandableRow(record)
+                }}
+              />
+            </Card>
+          )}
         </Body>
       </Wrapper>
     </div>
