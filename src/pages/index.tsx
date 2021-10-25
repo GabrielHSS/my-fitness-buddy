@@ -161,9 +161,10 @@ const Home: React.FC = () => {
     return rows
   }
 
-  const expandableRow = (record: Record) => {
+  const expandableRow = (record: Record, key: number) => {
     return (
       <List
+        key={key}
         bordered
         dataSource={record.foodNutrients || undefined}
         style={{ maxHeight: '500px', overflowY: 'scroll' }}
@@ -182,7 +183,6 @@ const Home: React.FC = () => {
   }
   useEffect(() => {
     selectedFood === '' && setApiData(undefined)
-    console.log(apiData)
   }, [selectedFood])
   return (
     <div>
@@ -214,7 +214,6 @@ const Home: React.FC = () => {
               placeholder="Pesquise aqui o alimento"
               size="large"
               onChange={event => {
-                console.log(event.target.value, apiData)
                 setSelectedFood(event.target.value)
               }}
               onSearch={handleData}
@@ -227,8 +226,9 @@ const Home: React.FC = () => {
                 columns={columns}
                 dataSource={tableData(apiData?.foods)}
                 loading={loading}
+                rowKey={record => record.description.toString()}
                 expandable={{
-                  expandedRowRender: record => expandableRow(record)
+                  expandedRowRender: (record, key) => expandableRow(record, key)
                 }}
               />
             </Card>
